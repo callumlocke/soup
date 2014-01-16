@@ -18,11 +18,22 @@ soup.toString();
 //> <br><img src=bar.png><br>
 ```
 
+Note that you can use **any CSS3 selector** to query for elements to update. The above example just uses `img`, but you could use anything that [Cheerio](https://github.com/MatthewMueller/cheerio) would understand.
+
+### Generating new values dynamically
+For the new value, you can also pass a **function** that returns the new value. Your function will be passed the old value. For example, to add a cachebuster query string to all images:
+
+```javascript
+soup.setAttribute('img', 'src', function (oldValue) {
+  return oldValue + '?12345'
+});
+```
+
 
 To do
 -----
 
-* Make it possible to pass a function that returns a value
+* ~Make it possible to pass a function that returns a value~
 * Add `soup.setInnerHTML(selector, newHTML)`
 * Add `soup.setOuterHTML(selector, newHTML)`
 

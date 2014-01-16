@@ -62,3 +62,12 @@ module.exports =
         soup.setAttribute 'img', 'data-foo', 'bar'
         test.strictEqual soup.toString(), '<br><img data-foo="bar">'
         test.done()
+
+      'passing a function to generate the new value': (test) ->
+        soup = new Soup '<br><img src=bar.jpg>'
+        soup.setAttribute 'img', 'src', (oldValue) ->
+          test.strictEqual oldValue, 'bar.jpg'
+          return oldValue + '?12345'
+
+        test.strictEqual soup.toString(), '<br><img src=bar.jpg?12345>'
+        test.done()

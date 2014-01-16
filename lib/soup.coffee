@@ -91,6 +91,10 @@ module.exports = class Soup
         attr = new Attribute attrString
 
         if attr.name() is name
+          # Generate the new value if necessary
+          if typeof value is 'function'
+            value = value(attr.valueWithoutQuotes())
+
           if attr.hasValue()
             # Replace the existing value
             quoteType = attr.quoteType()
