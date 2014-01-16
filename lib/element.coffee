@@ -15,18 +15,22 @@ IN_ATTRIBUTE_VALUE_NQ  = 8
 
 module.exports = class Element
 
-  constructor: (@string) ->
-    @attributes = []
+  constructor: (@_string) ->
 
-    if @string[0] != '<'
+  getAttributes: ->
+    return @_attributes if @_attributes?
+
+    @_attributes = []
+
+    if @_string.charAt(0) != '<'
       throw new Error 'First character of tag should be "<"'
 
     # Now just walk through the string and build up the attributes...
     i = 0
     state = IN_TAG_NAME
     currentAttrStart = null
-    while ++i < @string.length - 1
-      char = @string[i]
+    while ++i < @_string.length - 1
+      char = @_string.charAt(i)
 
       switch state
 
@@ -58,9 +62,9 @@ module.exports = class Element
               state = BEFORE_ATTRIBUTE_VALUE
             else if not /\s/.test char
               # Roll the i back to the last space
-              while /\s/.test @string.charAt(i - 1)
+              while /\s/.test @_string.charAt(i - 1)
                 i--
-              @attributes.push
+              @_attributes.push
                 start: currentAttrStart
                 end: i
                 # boolean: true # not needed
@@ -77,7 +81,7 @@ module.exports = class Element
 
         when IN_ATTRIBUTE_VALUE_DQ
           if char == '"'
-            @attributes.push
+            @_attributes.push
               start: currentAttrStart
               end: i + 1
             currentAttrStart = null
@@ -85,7 +89,7 @@ module.exports = class Element
 
         when IN_ATTRIBUTE_VALUE_SQ
           if char is "'"
-            @attributes.push
+            @_attributes.push
               start: currentAttrStart
               end: i + 1
             currentAttrStart = null
@@ -93,7 +97,7 @@ module.exports = class Element
 
         when IN_ATTRIBUTE_VALUE_NQ
           if /[\s\>\/]/.test char
-            @attributes.push
+            @_attributes.push
               start: currentAttrStart
               end: i
             currentAttrStart = null
@@ -102,10 +106,12 @@ module.exports = class Element
         else throw new Error 'Bug in here somewhere'
 
     if currentAttrStart
-      while /[\>\/]/.test @string.charAt(i)
+      while /[\>\/]/.test @_string.charAt(i)
         i--
       i++
-      @attributes.push
+      @_attributes.push
         start: currentAttrStart
         end: i
       currentAttrStart = null
+
+    return @_attributes

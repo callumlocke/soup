@@ -27,10 +27,10 @@ module.exports =
         'empty=""'
       ]
 
-      test.strictEqual expectedAttributes.length, ot.attributes.length
+      test.strictEqual expectedAttributes.length, ot.getAttributes().length
 
       for expected, i in expectedAttributes
-        attr = ot.attributes[i]
+        attr = ot.getAttributes()[i]
         result = dodgy.substring attr.start, attr.end
         test.strictEqual result, expected
 
@@ -40,6 +40,6 @@ module.exports =
       'boolean': (test) ->
         dodgy = '<img data-asdf>'
         ot = new Element dodgy
-        test.strictEqual ot.attributes.length, 1
-        test.strictEqual dodgy.substring(ot.attributes[0].start, ot.attributes[0].end), 'data-asdf'
+        test.strictEqual ot.getAttributes().length, 1
+        test.strictEqual dodgy.substring(ot.getAttributes()[0].start, ot.getAttributes()[0].end), 'data-asdf'
         test.done()

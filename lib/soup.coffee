@@ -19,9 +19,21 @@ module.exports = class Soup
       onopentag: (tagName, attributes) =>
         tagId++
         tagStack.push
-          startIndex: parser.startIndex
+          start: parser.startIndex
+          end: parser._tokenizer._index + 1
           id: tagId
-        openingTag = @_string.substring(parser.startIndex, parser.endIndex+1)
+
+        if parser.endIndex <= parser.startIndex
+          openingTag = @_string.substring(
+            parser.startIndex,
+            parser._tokenizer._index
+          )
+        else
+          openingTag = @_string.substring(
+            parser.startIndex,
+            parser.endIndex + 1
+          )
+
         modifiedOpeningTag = do =>
           endOfTagNameIndex = openingTag.indexOf ' '
           if endOfTagNameIndex == -1
@@ -29,6 +41,8 @@ module.exports = class Soup
           if endOfTagNameIndex == -1
             endOfTagNameIndex = openingTag.indexOf '>'
           if endOfTagNameIndex == -1
+            console.log '\n\nEHHHH\n', "__#{openingTag}__"
+            console.log parser
             throw new Error 'Should not happen :)'
           openingTag = (
             openingTag.substring(0, endOfTagNameIndex) +
@@ -45,18 +59,20 @@ module.exports = class Soup
         correspondingOpeningTag = tagStack.pop()
 
         # Hack to fix problem where parser is at index=1 if the very first character was the beginning of an element
-        if correspondingOpeningTag.startIndex == 1 && @_string.charAt(1) != '<'
-          correspondingOpeningTag.startIndex = 0
+        if correspondingOpeningTag.start == 1 && @_string.charAt(1) != '<'
+          correspondingOpeningTag.start = 0
 
-        endIndex = parser.endIndex + 1
+        selfClosingTag = (parser.startIndex == correspondingOpeningTag.start)
 
         @_elements[correspondingOpeningTag.id] =
-          # string: @_string.substring(
-          #   correspondingOpeningTag.startIndex,
-          #   endIndex
-          # ) # TODO: get this lazily instead, to improve memory usage
-          startIndex: correspondingOpeningTag.startIndex
-          endIndex: endIndex
+          start: correspondingOpeningTag.start
+          contentStart: correspondingOpeningTag.end
+          contentEnd: (
+            if selfClosingTag
+              correspondingOpeningTag.end
+            else parser.startIndex
+          )
+          end: parser.endIndex + 1
 
       onend: =>
         refString += @_string.substring lastIndex
@@ -76,15 +92,15 @@ module.exports = class Soup
       foundElements.push elements[id]
     foundElements
 
-  setAttribute: (selector, name, value) ->
-    selection = @_select selector
+  setAttribute: (selector, name, _value) ->
+    splicings = []
 
-    for element in selection
+    for element in @_select selector
       openingTagString = @_string.substring(
-        element.startIndex,
-        element.endIndex
+        element.start,
+        element.end
       )
-      attributes = (new Element(openingTagString)).attributes
+      attributes = (new Element(openingTagString)).getAttributes()
 
       for attrDetails in attributes
         attrString = openingTagString.substring(attrDetails.start, attrDetails.end)
@@ -92,14 +108,18 @@ module.exports = class Soup
 
         if attr.name() is name
           # Generate the new value if necessary
-          if typeof value is 'function'
-            value = value(attr.valueWithoutQuotes())
+          switch typeof _value
+            when 'function'
+              value = _value(attr.valueWithoutQuotes())
+            when 'string'
+              value = _value
+            else throw new Error "Unexpected type: #{typeof _value}"
 
           if attr.hasValue()
             # Replace the existing value
             quoteType = attr.quoteType()
             valStart = (
-              element.startIndex +
+              element.start +
               attrDetails.start +
               attr.valueStartIndex()
             )
@@ -107,50 +127,93 @@ module.exports = class Soup
             switch quoteType
               when '"', "'"
                 # It's quoted already; just replace the value inside the quotes
-                @_string = (
-                  @_string.substring(0, valStart) +
-                  (
+                splicings.push
+                  start: valStart
+                  content: (
                     if quoteType is '"' then value.replace('"', '&quot;')
                     else value.replace("'", '&apos;')
-                  ) +
-                  @_string.substring(valEnd)
-                )
+                  )
+                  end: valEnd
+
               when null
                 # It's not quoted.
                 # Replace the existing value, and add quotes only if necessary
                 if /[\s\'\"]/.test value
                   # Needs quotes added
-                  @_string = (
-                    @_string.substring(0, valStart) +
-                    '"' +
-                    value.replace('"', '&quot;') +
-                    '"' +
-                    @_string.substring(valEnd)
-                  )
+                  splicings.push
+                    start: valStart
+                    content: (
+                      '"' +
+                      value.replace('"', '&quot;') +
+                      '"'
+                    )
+                    end: valEnd
                 else
                   # OK to leave it quoteless
-                  @_string = (
-                    @_string.substring(0, valStart) +
-                    value +
-                    @_string.substring(valEnd)
-                  )
+                  splicings.push
+                    start: valStart
+                    content: value
+                    end: valEnd
               else throw new Error "Unknown quote type: #{quoteType}"
 
           else
             # It's a boolean attribute.
             # Add the value after it, in double quotes
             endOfAttributeIndex = (
-              element.startIndex +
+              element.start +
               attrDetails.end
             )
-            @_string = (
-              @_string.substring(0, endOfAttributeIndex) +
-              '="' +
-              value.replace('"', '&quot;') +
-              '"' +
-              @_string.substring(endOfAttributeIndex)
-            )
-          return this
+            splicings.push
+              start: endOfAttributeIndex
+              content: (
+                '="' +
+                value.replace('"', '&quot;') +
+                '"'
+              )
+              end: endOfAttributeIndex
+
+          continue # No need to check if any more attributes match
+
+    @_performSplicings splicings
+
+
+  setInnerHTML: (selector, _newHTML) ->
+    splicings = []
+
+    for element in @_select selector
+      console.log 'element', element
+
+      switch typeof _newHTML
+        when 'function'
+          oldHTML = @_string.substring element.contentStart, element.contentEnd
+          newHTML = _newHTML(oldHTML)
+        when 'string'
+          newHTML = _newHTML
+        else throw new Error "Unexpected type: #{typeof _newHTML}"
+
+      splicings.push
+        start: element.contentStart
+        content: newHTML
+        end: element.contentEnd
+
+    @_performSplicings splicings
+
+
+  _performSplicings: (splicings) ->
+    if splicings.length
+      lastIndex = 0
+      newString = ''
+      for splicing, i in splicings
+        newString += (
+          @_string.substring(
+            lastIndex, splicing.start
+          ) +
+          splicing.content
+        )
+        lastIndex = splicing.end
+      newString += @_string.substring(lastIndex)
+
+      @_string = newString
 
   toString: ->
     @_string;
