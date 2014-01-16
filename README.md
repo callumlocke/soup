@@ -38,7 +38,7 @@ To do
 -----
 
 * ~~Make it possible to pass a function that returns a value~~
-* Add `soup.setInnerHTML(selector, newHTML)`
+* ~~Add `soup.setInnerHTML(selector, newHTML)`~~
 * Add `soup.setOuterHTML(selector, newHTML)`
 
 
