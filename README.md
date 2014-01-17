@@ -1,10 +1,10 @@
 # soup [![Build Status](https://secure.travis-ci.org/callumlocke/soup.png?branch=master)](http://travis-ci.org/callumlocke/soup)
 
-A little library for querying and manipulating HTML via CSS selectors. It performs manipulations on the string itself, rather than operating on a parsed DOM and then re-exporting it. So it retains all the syntactic/formatting nuances of the original, such as:
+A little library for querying and manipulating HTML via CSS selectors. It works on the string itself, rather than working on a parsed DOM and then re-exporting it. So it retains the syntactic/formatting nuances of the original, such as:
 
 * attribute quotes or lack thereof,
-* whitespace, 
-* invalid-but-parseable junk, 
+* whitespace,
+* invalid-but-parseable junk,
 * omitted closing tags, etc.
 
 This is intended to help with writing **build tasks/plugins** that need to manipulate other people's markup, without normalising away all the author's formatting choices.
@@ -25,7 +25,7 @@ soup.toString();
 
 ### Selectors
 
-Soup uses [Cheerio](https://github.com/MatthewMueller/cheerio) under the hood for querying the markup, so you can use any CSS3 selector in the methods below.
+Soup uses [Cheerio](https://github.com/MatthewMueller/cheerio) under the hood for querying, so you can use any CSS3 selector in the methods below.
 
 
 ### Methods
@@ -35,7 +35,7 @@ Soup uses [Cheerio](https://github.com/MatthewMueller/cheerio) under the hood fo
 * `newValue` can be a **string**, or a **function** that returns a string.
   * If you use a function, it will be passed the attribute's current value as its first argument.
 
-Example: adding a query string to all images:
+Example – adding a query string to all images:
 
 ```javascript
 soup.setAttribute('img', 'src', function (oldValue) {
@@ -48,7 +48,7 @@ soup.setAttribute('img', 'src', function (oldValue) {
 * As with `setAttribute`, the `newHTML` can either be a string or a function.
   * If you use a function, it will be passed the element's current inner HTML.
 
-Example: appending new content inside an element
+Example – appending content inside an element:
 
 ```javascript
 soup.setInnerHTML('#foo', function (oldHTML) {
