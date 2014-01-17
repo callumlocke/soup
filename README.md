@@ -1,8 +1,13 @@
 # soup [![Build Status](https://secure.travis-ci.org/callumlocke/soup.png?branch=master)](http://travis-ci.org/callumlocke/soup)
 
-A little library for querying and manipulating a raw HTML string, but without just parsing it into a DOM and re-exporting it.
+A little library for querying and manipulating HTML via CSS selectors. It performs manipulations on the string itself, rather than operating on a parsed DOM and then re-exporting it. So it retains all the syntactic/formatting nuances of the original, such as:
 
-This is intended to help with writing **build tasks/plugins** that need to manipulate markup while respecting and preserving the syntactic/formatting nuances of the original – nuances such as: attribute quotes or lack thereof, whitespace, invalid but parseable junk, omitted closing tags, etc.
+* attribute quotes or lack thereof,
+* whitespace, 
+* invalid-but-parseable junk, 
+* omitted closing tags, etc.
+
+This is intended to help with writing **build tasks/plugins** that need to manipulate other people's markup, without normalising away all the author's formatting choices.
 
 
 Usage
@@ -12,24 +17,42 @@ Usage
 
 ```javascript
 var Soup = require('soup');
-soup = new Soup('<br><img src=foo.jpg><br>');
-soup.setAttribute('img', 'src', 'bar.png');
+soup = new Soup('<br><img class=hey src=foo.jpg><br>');
+soup.setAttribute('img.hey', 'src', 'bar.png');
 soup.toString();
-//> <br><img src=bar.png><br>
+//> <br><img class=hey src=bar.png><br>
 ```
 
-Note that you can use **any CSS3 selector** to query for elements. The above example just uses `img`, but you could use anything that [Cheerio](https://github.com/MatthewMueller/cheerio) would understand.
+### Selectors
+
+Soup uses [Cheerio](https://github.com/MatthewMueller/cheerio) under the hood for querying the markup, so you can use any CSS3 selector in the methods below.
 
 
-### Generating new values dynamically
+### Methods
 
-For the new value, you can also pass a **function** that returns the new value. Your function will be passed the old value.
+#### `setAttribute(selector, attributeName, newValue)`
 
-For example, to add a cachebuster query string to all images:
+* `newValue` can be a **string**, or a **function** that returns a string.
+  * If you use a function, it will be passed the attribute's current value as its first argument.
+
+Example: adding a query string to all images:
 
 ```javascript
 soup.setAttribute('img', 'src', function (oldValue) {
   return oldValue + '?12345'
+});
+```
+
+#### `setInnerHTML(selector, attributeName, newHTML)`
+
+* As with `setAttribute`, the `newHTML` can either be a string or a function.
+  * If you use a function, it will be passed the element's current inner HTML.
+
+Example: appending new content inside an element
+
+```javascript
+soup.setInnerHTML('#foo', function (oldHTML) {
+  return oldHTML + '<p>appended content</p>'
 });
 ```
 
