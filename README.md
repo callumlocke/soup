@@ -28,7 +28,7 @@ soup.setAttribute('.thing', 'class', function (oldValue){
   return oldValue + ' another'
 });
 soup.toString();
-//> <br><img src=bar.png class="thing ho"><br>
+//> <br><img src=bar.png class="thing another"><br>
 ```
 
 ### Selectors
