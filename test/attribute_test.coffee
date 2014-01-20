@@ -1,4 +1,4 @@
-Attribute = require '../lib/attribute'
+Attribute = require '../src/attribute'
 
 # Shorthand for use in assertions
 attr = (str) -> new Attribute str

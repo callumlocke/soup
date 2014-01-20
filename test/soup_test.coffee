@@ -1,4 +1,4 @@
-Soup = require '../lib/soup'
+Soup = require '../src/soup'
 fs = require 'fs'
 
 module.exports =

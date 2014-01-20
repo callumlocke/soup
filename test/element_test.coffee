@@ -1,4 +1,4 @@
-Element = require '../lib/element'
+Element = require '../src/element'
 
 # Shorthand for use in assertions
 tag = (str) -> new Element str
