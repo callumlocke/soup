@@ -116,9 +116,12 @@ module.exports = class Soup
           switch typeof _value
             when 'function'
               value = _value(attr.valueWithoutQuotes())
-            when 'string', 'boolean'
+            when 'string', 'boolean', 'undefined'
               value = _value
-            else throw new Error "Unexpected type: #{typeof _value}"
+            else
+              if _value?
+                throw new Error "Unexpected type: #{typeof _value}"
+              value = null
 
           switch value
             when true
@@ -133,7 +136,10 @@ module.exports = class Soup
                 start: element.start + attrDetails.start - 1
                 content: ''
                 end: element.start + attrDetails.end
+            when null, undefined
+              # Do nothing :)
             else
+              # It's a string.
               # Replace or add the value
               if attr.hasValue()
                 # Replace the existing value

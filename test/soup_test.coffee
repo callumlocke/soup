@@ -124,6 +124,13 @@ module.exports =
           test.strictEqual soup.toString(), '<br><img data-foo="bar">'
           test.done()
 
+        'making no change to an attribute': (test) ->
+          soup = new Soup '<br><img data-foo>'
+          soup.setAttribute 'img', 'data-foo', null
+          soup.setAttribute 'img', 'data-foo', undefined
+          test.strictEqual soup.toString(), '<br><img data-foo>'
+          test.done()
+
         'passing a function to generate the new value': (test) ->
           soup = new Soup '<br><img src=bar.jpg>'
           soup.setAttribute 'img', 'src', (oldValue) ->
@@ -131,6 +138,14 @@ module.exports =
             return oldValue + '?12345'
 
           test.strictEqual soup.toString(), '<br><img src=bar.jpg?12345>'
+          test.done()
+
+        'passing a function that elects to make no change': (test) ->
+          soup = new Soup '<br><img src=bar.jpg>'
+          soup.setAttribute 'img', 'src', (oldValue) ->
+            test.strictEqual oldValue, 'bar.jpg'
+            return null
+          test.strictEqual soup.toString(), '<br><img src=bar.jpg>'
           test.done()
 
         'turning it into a boolean attribute (passing `true`)':
