@@ -46,6 +46,7 @@ Soup uses [Cheerio](https://github.com/MatthewMueller/cheerio) under the hood fo
   - `false` – to delete the attribute
   - `null` – for no change
   - a function – which will be passed the current value, and should return one of the above values
+- Soup will respect the original quote style of each attribute it updates whenever possible (but quotes will be added to non-quoted values if necessitated by characters in the new value).
 
 Example – adding a query string to all image URLs:
 
