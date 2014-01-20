@@ -5,7 +5,7 @@
 ###
 
 IN_TAG_NAME            = 1
-BEFORE_ATTRIBUTE_NAME  = 2
+LOOSE_IN_TAG           = 2
 IN_ATTRIBUTE_NAME      = 3
 AFTER_ATTRIBUTE_NAME   = 4
 BEFORE_ATTRIBUTE_VALUE = 5
@@ -36,39 +36,38 @@ module.exports = class Element
 
         when IN_TAG_NAME
           if char is ' '
-            state = BEFORE_ATTRIBUTE_NAME
+            state = LOOSE_IN_TAG
 
-        when BEFORE_ATTRIBUTE_NAME
-          # or possibly before the end of the tag!
-          if char is '/' or char is '>'
-            break # Done!
-          else if not /\s/.test char
+        when LOOSE_IN_TAG
+          if char is '/' or char is '>' # End of tag
+            break
+          else if not /\s/.test char # Beginning of an attr name
             state = IN_ATTRIBUTE_NAME
             currentAttrStart = i
-          # else state hasn't changed
+          # else still loose in tag
 
         when IN_ATTRIBUTE_NAME
-          if char is '='
+          if char is '=' # Equals sign directly after attr name
             state = BEFORE_ATTRIBUTE_VALUE
-          else if /\s/.test char
+          else if /\s/.test char # Either now waiting for an (invalidly-spaced) equals sign, or a boolean value has just been completed
             state = AFTER_ATTRIBUTE_NAME
-          else if /[\>\/]/
-            break # Done!
+          else if /[\>\/]/ # End of tag
+            break
           # else we're still in the attribute name.
 
         when AFTER_ATTRIBUTE_NAME
-            # This is the space after an attribute name, where it's either invalid space between the name and the equals sign, or it's valid space after a boolean attribute.
-            if char == '='
+            if char == '=' # Equals sign after (invalid) intra-attr space
               state = BEFORE_ATTRIBUTE_VALUE
-            else if not /\s/.test char
-              # Roll the i back to the last space
-              while /\s/.test @_string.charAt(i - 1)
-                i--
+            else if not /\s/.test char # Last boolean attribute was completed
+              # Current attribute completed; add it
+              if not currentAttrStart?
+                throw new Error 'Bug: currentAttrStart should exist at this point'
+              i-- while /\s/.test @_string.charAt(i - 1) # Roll index back to the last space
               @_attributes.push
                 start: currentAttrStart
                 end: i
-                # boolean: true # not needed
-              state = BEFORE_ATTRIBUTE_NAME
+                # boolean: true # (not needed)
+              state = LOOSE_IN_TAG
               currentAttrStart = null
 
         when BEFORE_ATTRIBUTE_VALUE
@@ -85,7 +84,7 @@ module.exports = class Element
               start: currentAttrStart
               end: i + 1
             currentAttrStart = null
-            state = BEFORE_ATTRIBUTE_NAME
+            state = LOOSE_IN_TAG
 
         when IN_ATTRIBUTE_VALUE_SQ
           if char is "'"
@@ -93,7 +92,7 @@ module.exports = class Element
               start: currentAttrStart
               end: i + 1
             currentAttrStart = null
-            state = BEFORE_ATTRIBUTE_NAME
+            state = LOOSE_IN_TAG
 
         when IN_ATTRIBUTE_VALUE_NQ
           if /[\s\>\/]/.test char
@@ -101,7 +100,7 @@ module.exports = class Element
               start: currentAttrStart
               end: i
             currentAttrStart = null
-            state = BEFORE_ATTRIBUTE_NAME
+            state = LOOSE_IN_TAG
         
         else throw new Error 'Bug in here somewhere'
 

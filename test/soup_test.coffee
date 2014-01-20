@@ -5,11 +5,12 @@ module.exports =
 
   'Soup class':
 
-    '#constructor':
+    '#_build':
       'correctly establishes the key indexes of all the elements': (test) ->
         html = '<p classs=hi><span class="yo" ><img>asdf<br></span></p>'
 
         soup = new Soup html
+        soup._build()
 
         # <p>
         pEl = soup._elements[1]
@@ -41,7 +42,7 @@ module.exports =
 
         test.done()
 
-      'handles omitted closing tags correctly': (test) ->
+      'establishes correct indexes even when closing tags are omitted': (test) ->
         html = """
         <head>
           <title>Test</title>
@@ -54,6 +55,7 @@ module.exports =
         """
 
         soup = new Soup html
+        soup._build()
 
         head = soup._elements[1]
         title = soup._elements[2]
@@ -74,6 +76,7 @@ module.exports =
       'selects all the right elements': (test) ->
         html = '<img><br hi><br><p>Hi</p>'
         soup = new Soup html
+        soup._build()
         test.strictEqual soup._select('img').length, 1
         test.strictEqual soup._select('br').length, 2
         test.strictEqual soup._select('br[hi]').length, 1
@@ -83,67 +86,112 @@ module.exports =
         # This was to fix a bug.
         html = '<img>'
         soup = new Soup html
+        soup._build()
         selection = soup._select 'img'
         test.strictEqual selection.length, 1
         test.done()
 
     '#setAttribute':
-      'updating non-quoted value':
-        'with a new value that also doesn\'t need quotes': (test) ->
-          soup = new Soup '<img data-foo=bar>'
-          soup.setAttribute 'img', 'data-foo', 'wow'
-          test.equal soup.toString(), '<img data-foo=wow>'
+      'updating existing attribute':
+        'updating non-quoted value':
+          'with a new value that also doesn\'t need quotes': (test) ->
+            soup = new Soup '<img data-foo=bar>'
+            soup.setAttribute 'img', 'data-foo', 'wow'
+            test.equal soup.toString(), '<img data-foo=wow>'
+            test.done()
+
+          'with a new value that DOES need quotes': (test) ->
+            soup = new Soup '<br><img data-foo=bar>'
+            soup.setAttribute 'img', 'data-foo', 'new " \' value'
+            test.equal soup.toString(), '<br><img data-foo="new &quot; \' value">'
+            test.done()
+
+        'updating a quoted value':
+          'with double quotes': (test) ->
+            soup = new Soup '<br><img data-foo="bar">'
+            soup.setAttribute 'img', 'data-foo', 'new " \' value'
+            test.equal soup.toString(), '<br><img data-foo="new &quot; \' value">'
+            test.done()
+          'with single quotes': (test) ->
+            soup = new Soup "<br><img data-foo='bar'>"
+            soup.setAttribute 'img', 'data-foo', 'new " \' value'
+            test.equal soup.toString(), "<br><img data-foo='new \" &apos; value'>"
+            test.done()
+
+        'adding a value to a boolean attribute': (test) ->
+          soup = new Soup '<br><img data-foo>'
+          soup.setAttribute 'img', 'data-foo', 'bar'
+          test.strictEqual soup.toString(), '<br><img data-foo="bar">'
           test.done()
 
-        'with a new value that DOES need quotes': (test) ->
-          soup = new Soup '<br><img data-foo=bar>'
-          soup.setAttribute 'img', 'data-foo', 'new " \' value'
-          test.equal soup.toString(), '<br><img data-foo="new &quot; \' value">'
+        'passing a function to generate the new value': (test) ->
+          soup = new Soup '<br><img src=bar.jpg>'
+          soup.setAttribute 'img', 'src', (oldValue) ->
+            test.strictEqual oldValue, 'bar.jpg'
+            return oldValue + '?12345'
+
+          test.strictEqual soup.toString(), '<br><img src=bar.jpg?12345>'
           test.done()
 
-      'updating a quoted value':
-        'with double quotes': (test) ->
-          soup = new Soup '<br><img data-foo="bar">'
-          soup.setAttribute 'img', 'data-foo', 'new " \' value'
-          test.equal soup.toString(), '<br><img data-foo="new &quot; \' value">'
+        'turning it into a boolean attribute (passing `true`)':
+          'when already boolean (no change)': {}
+          'when it has an existing value': (test) ->
+            soup = new Soup '<br><img hey="ho">'
+            soup.setAttribute 'img', 'hey', true
+            test.strictEqual soup.toString(), '<br><img hey>'
+            test.done()
+        'removing the attribute': (test) ->
+          soup = new Soup '<br><img hey="ho" yo>'
+          soup.setAttribute 'img', 'hey', false
+          test.strictEqual soup.toString(), '<br><img yo>'
           test.done()
-        'with single quotes': (test) ->
-          soup = new Soup "<br><img data-foo='bar'>"
-          soup.setAttribute 'img', 'data-foo', 'new " \' value'
-          test.equal soup.toString(), "<br><img data-foo='new \" &apos; value'>"
+
+        'updating multiple elements in one go': (test) ->
+          html = """
+            test
+            <p class=para>Paragraph 1</p>
+            <p class="para">Paragraph 2</p>
+            """
+          soup = new Soup html
+          soup.setAttribute 'p', 'class', 'foo'
+          test.strictEqual soup.toString(), """
+            test
+            <p class=foo>Paragraph 1</p>
+            <p class="foo">Paragraph 2</p>
+            """
           test.done()
 
-      'adding a value to a boolean attribute': (test) ->
-        soup = new Soup '<br><img data-foo>'
-        soup.setAttribute 'img', 'data-foo', 'bar'
-        test.strictEqual soup.toString(), '<br><img data-foo="bar">'
-        test.done()
+      'adding a new attribute that isn\'t there':
+        'normal': (test) ->
+          soup = new Soup '<br><img data-foo>'
+          soup.setAttribute 'img', 'src', 'hi.jpg'
+          test.strictEqual soup.toString(), '<br><img data-foo src="hi.jpg">'
+          test.done()
 
-      'passing a function to generate the new value': (test) ->
-        soup = new Soup '<br><img src=bar.jpg>'
-        soup.setAttribute 'img', 'src', (oldValue) ->
-          test.strictEqual oldValue, 'bar.jpg'
-          return oldValue + '?12345'
+        'with self-closing slash': (test) ->
+          soup = new Soup '<br><img data-foo/>'
+          soup.setAttribute 'img', 'src', 'hi.jpg'
+          test.strictEqual soup.toString(), '<br><img data-foo src="hi.jpg"/>'
+          test.done()
+        
+        # 'with self-closing slash after space': (test) ->
+        #   soup = new Soup '<br><img data-foo />'
+        #   soup.setAttribute 'img', 'src', 'hi.jpg'
+        #   test.strictEqual soup.toString(), '<br><img data-foo src="hi.jpg" />'
+        #   test.done()
 
-        test.strictEqual soup.toString(), '<br><img src=bar.jpg?12345>'
-        test.done()
+        'adding boolean attribute that isnt there': (test) ->
+          soup = new Soup '<button><img data-foo/>'
+          soup.setAttribute 'button', 'disabled', true
+          test.strictEqual soup.toString(), '<button disabled><img data-foo/>'
+          test.done()
 
-      'updating multiple attributes in one go': (test) ->
-        html = """
-          test
-          <p class=para>Paragraph 1</p>
-          <p class="para">Paragraph 2</p>
-          """
-        soup = new Soup html
-
-        soup.setAttribute 'p', 'class', 'foo'
-
-        test.strictEqual soup.toString(), """
-          test
-          <p class=foo>Paragraph 1</p>
-          <p class="foo">Paragraph 2</p>
-          """
-
+      'making a few changes, one after another': (test) ->
+        soup = new Soup '<br><img src="foo">'
+        soup.setAttribute 'br', 'class', 'pigs'
+        soup.setAttribute 'img', 'src', 'temporary'
+        soup.setAttribute 'img', 'src', 'bar'
+        test.strictEqual soup.toString(), '<br class="pigs"><img src="bar">'
         test.done()
 
       # 'handles multiple changes across nested elements': (test) ->
@@ -177,7 +225,6 @@ module.exports =
         soup.setInnerHTML '.para', (oldHTML) ->
           test.strictEqual oldHTML, 'foo <span>bar</span>'
           return '<b>aight</b>'
-
         test.strictEqual soup.toString(), 'test <p class=para><b>aight</b></p>'
         test.done()
 
