@@ -16,8 +16,7 @@ Use cases:
 - anywhere else you need to make automated, light-touch changes to other people's markup
 
 
-Usage
------
+## Usage
 
 `npm install soup`
 
@@ -69,7 +68,6 @@ soup.setInnerHTML('#foo', function (oldHTML) {
 ```
 
 
-License
--------
+## License
 
 Copyright (c) 2014 Callum Locke. Licensed under the MIT license.
