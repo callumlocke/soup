@@ -1,19 +1,19 @@
-# soup [![Build Status](https://secure.travis-ci.org/callumlocke/soup.png?branch=master)](http://travis-ci.org/callumlocke/soup)
+# soup [![Build Status](https://secure.travis-ci.org/callumlocke/soup.png?branch=master)](http://travis-ci.org/callumlocke/soup) [![Dependency Status](https://gemnasium.com/callumlocke/soup.png)](https://gemnasium.com/callumlocke/soup)
 
 A little library for querying and manipulating tag soup via CSS selectors.
 
-It performs manipulations on the string itself (rather than operating on a parsed DOM and then re-exporting it). So it retains all the syntactic/formatting nuances of the original, such as:
+It manipulates the string itself (rather than operating on a parsed DOM and then re-exporting it). So it retains all the syntactic/formatting nuances of the original, such as:
 
 - attribute quotes or lack thereof,
 - whitespace,
-- invalid-but-parseable junk,
+- invalid-but-parseable stuff,
 - omitted closing tags, etc.
 
 Use cases:
 
-- build tasks/plugins that need to manipulate markup without normalising away all the original formatting
-- GUI webpage designers that need to combine hand-coded HTML with WYSIWYG-driven edits
-- anywhere else you need to make automated, light-touch changes to other people's markup
+- build tasks/plugins that need to manipulate markup without parsing away all the original formatting;
+- GUI webpage design tools that need to combine hand-coded HTML with WYSIWYG-driven edits;
+- anywhere else you need to make automated, light-touch changes to other people's markup.
 
 
 ## Usage
@@ -22,13 +22,18 @@ Use cases:
 
 ```javascript
 var Soup = require('soup');
-soup = new Soup('<br><img src=foo.jpg class=thing><br>');
-soup.setAttribute('.thing', 'src', 'bar.png');
-soup.setAttribute('.thing', 'class', function (oldValue){
-  return oldValue + ' another'
+
+soup = new Soup('<div class=thing><img src=cat.jpg></div>');
+
+// Change the img src
+soup.setAttribute('img', 'src', 'dog.jpg');
+soup.toString(); // <div class=thing><img src=dog.jpg></div>
+
+// Add a class to the div
+soup.setAttribute('.thing', 'class', function (oldValue) {
+  return oldValue + ' another';
 });
-soup.toString();
-//> <br><img src=bar.png class="thing another"><br>
+soup.toString(); // <div class="thing another"><img src=dog.jpg></div>
 ```
 
 ### Selectors
@@ -42,9 +47,9 @@ Soup uses [Cheerio](https://github.com/MatthewMueller/cheerio) under the hood fo
 
 - `newValue` can be:
   - any string – to set the attribute's value
-  - `true` – to set it as a boolean attribute (eg `disabled`)
+  - `true` – to set it as a boolean attribute (eg `required`)
   - `false` – to delete the attribute
-  - `null` – for no change
+  - `null` – for "no change"
   - a function – which will be passed the current value, and should return one of the above values
 - Soup will respect the original quote style of each attribute it updates whenever possible (but quotes will be added to non-quoted values if necessitated by characters in the new value).
 
@@ -58,7 +63,10 @@ soup.setAttribute('img', 'src', function (oldValue) {
 
 #### `setInnerHTML(selector, attributeName, newHTML)`
 
-* `newHTML` can either be a string of HTML, or a function that returns a string of HTML.
+- `newHTML` can be:
+  - a string of HTML
+  - a function that returns a string of HTML
+  - `null` for "no change"
 
 Example – appending new content inside an element:
 

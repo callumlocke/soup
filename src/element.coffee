@@ -1,7 +1,7 @@
 ###
   Element class
 
-  This is basically a simple parser for individual elements. It's primarily concerned with giving you information about the element's attributes.
+  This is basically a simple parser for individual elements. It's primarily concerned with getting character index info about the opening tag's attributes.
 ###
 
 IN_TAG_NAME            = 1

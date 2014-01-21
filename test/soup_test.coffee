@@ -243,6 +243,17 @@ module.exports =
         test.strictEqual soup.toString(), 'test <p class=para><b>aight</b></p>'
         test.done()
 
+      'null means no change': (test) ->
+        soup = new Soup 'test <p class=para>foo <span>bar</span></p>'
+
+        soup.setInnerHTML '.para', null # set directly
+        test.strictEqual soup.toString(), 'test <p class=para>foo <span>bar</span></p>'
+
+        soup.setInnerHTML '.para', -> null # set via function return value
+        test.strictEqual soup.toString(), 'test <p class=para>foo <span>bar</span></p>'
+
+        test.done()
+
       'works with multiple elements': (test) ->
         html = """
           test

@@ -10,7 +10,7 @@ module.exports = class Soup
   _build: ->
     # This constructor builds the _$ref document and the _elements hash, which together allow finding elements in the markup string by CSS selector.
 
-    @splicings = []
+    @_splicings = []
     @_lookupAttrName = "data-souplookup-#{Date.now()}"
     refString = ''
     lastIndex = 0
@@ -113,26 +113,27 @@ module.exports = class Soup
 
         if attr.name() is name
           # Generate the new value if necessary
-          switch typeof _value
+          type = typeof _value
+          switch type
             when 'function'
               value = _value(attr.valueWithoutQuotes())
             when 'string', 'boolean', 'undefined'
               value = _value
             else
               if _value?
-                throw new Error "Unexpected type: #{typeof _value}"
+                throw new Error "Unexpected type: #{type}"
               value = null
 
           switch value
             when true
               # Remove any existing value, turning it into a boolean attribute
-              @splicings.push
+              @_splicings.push
                 start: element.start + attrDetails.start
                 content: attr.name()
                 end: element.start + attrDetails.end
             when false
               # Remove the whole attribute
-              @splicings.push
+              @_splicings.push
                 start: element.start + attrDetails.start - 1
                 content: ''
                 end: element.start + attrDetails.end
@@ -154,26 +155,25 @@ module.exports = class Soup
                   when '"', "'"
                     # It's quoted already; just add the value
                     # just replace the value inside the quotes
-                    @splicings.push
+                    @_splicings.push
                       start: valStart
                       content: (
                         if quoteType is '"' then value.replace('"', '&quot;')
                         else value.replace("'", '&apos;')
                       )
                       end: valEnd
-
                   when null
                     # It's not quoted.
                     # Replace the existing value, and add quotes only if necessary
                     if /[\s\'\"]/.test value
                       # Needs quotes added
-                      @splicings.push
+                      @_splicings.push
                         start: valStart
                         content: '"' + value.replace('"', '&quot;') + '"'
                         end: valEnd
                     else
                       # OK to leave it quoteless
-                      @splicings.push
+                      @_splicings.push
                         start: valStart
                         content: value
                         end: valEnd
@@ -186,7 +186,7 @@ module.exports = class Soup
                   element.start +
                   attrDetails.end
                 )
-                @splicings.push
+                @_splicings.push
                   start: endOfAttributeIndex
                   content: '="' + value.replace('"', '&quot;') + '"'
                   end: endOfAttributeIndex
@@ -199,12 +199,13 @@ module.exports = class Soup
         # The attribute didn't already exist; we need to insert it.
         # Generate the new attribute to insert
         newAttrString = do ->
-          switch typeof _value
+          type = typeof _value
+          switch type
             when 'function'
               value = _value(null)
             when 'string', 'boolean'
               value = _value
-            else throw new Error "Unexpected type: #{typeof _value}"
+            else throw new Error "Unexpected type: #{type}"
 
           switch value
             # when false # ...means "remove", but it doesn't exist, so do nothing
@@ -221,7 +222,7 @@ module.exports = class Soup
         endInsideOpeningTag = (element.contentStart - 1)
         if @_string.charAt(endInsideOpeningTag - 1) is '/'
           endInsideOpeningTag--
-        @splicings.push
+        @_splicings.push
           start: endInsideOpeningTag
           content: " #{newAttrString}"
           end: endInsideOpeningTag
@@ -231,29 +232,31 @@ module.exports = class Soup
   setInnerHTML: (selector, _newHTML) ->
     @_build()
 
+    type = typeof _newHTML
     for element in @_select selector
-      # console.log 'element', element
-
-      switch typeof _newHTML
+      newHTML = null
+      switch type
         when 'function'
           oldHTML = @_string.substring element.contentStart, element.contentEnd
           newHTML = _newHTML(oldHTML)
         when 'string'
           newHTML = _newHTML
-        else throw new Error "Unexpected type: #{typeof _newHTML}"
-
-      @splicings.push
-        start: element.contentStart
-        content: newHTML
-        end: element.contentEnd
+        else
+          if _newHTML?
+            throw new Error "Unexpected type: #{type}"
+      if newHTML?
+        @_splicings.push
+          start: element.contentStart
+          content: newHTML
+          end: element.contentEnd
 
     @_execute()
 
   _execute: ->
-    if @splicings.length
+    if @_splicings.length
       lastIndex = 0
       newString = ''
-      for splicing, i in @splicings
+      for splicing, i in @_splicings
         newString += (
           @_string.substring(
             lastIndex, splicing.start

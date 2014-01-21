@@ -16,7 +16,7 @@ module.exports = (grunt) ->
           'fixtures/input/*.*'
           'fixtures/expected/*.*'
         ]
-        tasks: ['build']
+        tasks: ['nodeunit:all']
     clean:
       lib: ['lib']
     coffee:

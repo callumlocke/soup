@@ -1,6 +1,6 @@
 {
   "name": "soup",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "lib/soup.js",
   "description": "Query and manipulate raw markup via CSS selectors, without losing original formatting",
   "homepage": "http://github.com/callumlocke/soup",
