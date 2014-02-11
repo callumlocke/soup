@@ -5,7 +5,8 @@ Attribute = require './attribute'
 
 module.exports = class Soup
 
-  constructor: (@_string) ->
+  constructor: (_string) ->
+    @_string = _string.toString()
 
   _build: ->
     # This constructor builds the _$ref document and the _elements hash, which together allow finding elements in the markup string by CSS selector.
