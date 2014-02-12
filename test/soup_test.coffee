@@ -91,6 +91,20 @@ module.exports =
         test.strictEqual selection.length, 1
         test.done()
 
+    '#getAttribute':
+      'returns the attribute value': (test) ->
+        soup = new Soup '  <br> <img data-foo=bar>'
+        soup.getAttribute 'img', 'data-foo', (value, index) ->
+          test.equal index, 12
+        test.done()
+
+      'does not update the value': (test) ->
+        soup = new Soup '  <br><img data-foo=bar>'
+        soup.getAttribute 'img', 'data-foo', (value) ->
+          return 'ignoreme'
+        test.equal soup.toString(), '  <br><img data-foo=bar>'
+        test.done()
+
     '#setAttribute':
       'updating existing attribute':
         'updating non-quoted value':
@@ -105,6 +119,7 @@ module.exports =
             soup.setAttribute 'img', 'data-foo', 'new " \' value'
             test.equal soup.toString(), '<br><img data-foo="new &quot; \' value">'
             test.done()
+
 
         'updating a quoted value':
           'with double quotes': (test) ->
@@ -146,6 +161,13 @@ module.exports =
             test.strictEqual oldValue, 'bar.jpg'
             return null
           test.strictEqual soup.toString(), '<br><img src=bar.jpg>'
+          test.done()
+
+        'finding out the character index of the attribute': (test) ->
+          soup = new Soup '  <br> <img data-foo=bar>'
+          soup.setAttribute 'img', 'data-foo', (value, index) ->
+            test.equal index, 12
+            null
           test.done()
 
         'turning it into a boolean attribute (passing `true`)':

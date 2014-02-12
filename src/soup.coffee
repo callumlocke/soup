@@ -96,6 +96,14 @@ module.exports = class Soup
       foundElements.push elements[id]
     foundElements
 
+  getAttribute: (selector, name, callback) ->
+    _value = null
+    @setAttribute selector, name, (value, info) ->
+      callback(value, info) if callback?
+      _value = value
+      return null # ensure we don't actually set anything
+    return _value
+
   setAttribute: (selector, name, _value) ->
     @_build()
 
@@ -117,7 +125,8 @@ module.exports = class Soup
           type = typeof _value
           switch type
             when 'function'
-              value = _value(attr.valueWithoutQuotes())
+              absoluteIndex = element.start + attrDetails.start
+              value = _value(attr.valueWithoutQuotes(), absoluteIndex)
             when 'string', 'boolean', 'undefined'
               value = _value
             else
@@ -203,7 +212,7 @@ module.exports = class Soup
           type = typeof _value
           switch type
             when 'function'
-              value = _value(null)
+              value = _value(null, null)
             when 'string', 'boolean'
               value = _value
             else throw new Error "Unexpected type: #{type}"

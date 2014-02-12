@@ -51,6 +51,7 @@ Soup uses [Cheerio](https://github.com/MatthewMueller/cheerio) under the hood fo
   - `false` – to delete the attribute
   - `null` – for "no change"
   - a function – which will be passed the current value, and should return one of the above values
+    - it will also be passed an `index` as the second attribute (if the attribute was found), which contains the character index of the attribute you're changing.
 - Soup will respect the original quote style of each attribute it updates whenever possible (but quotes will be added to non-quoted values if necessitated by characters in the new value).
 
 Example – adding a query string to all image URLs:
@@ -61,11 +62,19 @@ soup.setAttribute('img', 'src', function (oldValue) {
 });
 ```
 
+#### `getAttribute(selector, attributeName, callback)`
+
+- Same as `setAttritute`, except for:
+  1. it returns the value, and
+  2. if you do pass a callback (you might want to do this if you need to access the `index` argument), its return value won't have any effect.
+
+
 #### `setInnerHTML(selector, attributeName, newHTML)`
 
 - `newHTML` can be:
   - a string of HTML
   - a function that returns a string of HTML
+    - this will be passed the oldHTML
   - `null` for "no change"
 
 Example – appending new content inside an element:
