@@ -97,8 +97,8 @@ module.exports = class Soup
     foundElements
 
   getAttribute: (selector, name, callback) ->
-    @setAttribute selector, name, (value, info) ->
-      callback(value, info) if callback?
+    @setAttribute selector, name, (value, start, end) ->
+      callback(value, start, end)
       _value = value
       return null # ensure we don't actually set anything
 
@@ -123,8 +123,9 @@ module.exports = class Soup
           type = typeof _value
           switch type
             when 'function'
-              absoluteIndex = element.start + attrDetails.start
-              value = _value(attr.valueWithoutQuotes(), absoluteIndex)
+              absoluteStart = element.start + attrDetails.start
+              absoluteEnd = element.start + attrDetails.end
+              value = _value(attr.valueWithoutQuotes(), absoluteStart, absoluteEnd)
             when 'string', 'boolean', 'undefined'
               value = _value
             else
@@ -210,7 +211,7 @@ module.exports = class Soup
           type = typeof _value
           switch type
             when 'function'
-              value = _value(null, null)
+              value = _value(null, null, null)
             when 'string', 'boolean'
               value = _value
             else throw new Error "Unexpected type: #{type}"
@@ -237,6 +238,12 @@ module.exports = class Soup
 
     @_execute()
 
+  getInnerHTML: (selector, callback) ->
+    @setInnerHTML selector, (value, start, end) ->
+      callback(value, start, end)
+      _value = value
+      return null # ensure we don't actually set anything
+
   setInnerHTML: (selector, _newHTML) ->
     @_build()
 
@@ -246,7 +253,7 @@ module.exports = class Soup
       switch type
         when 'function'
           oldHTML = @_string.substring element.contentStart, element.contentEnd
-          newHTML = _newHTML(oldHTML)
+          newHTML = _newHTML(oldHTML, element.contentStart, element.contentEnd)
         when 'string'
           newHTML = _newHTML
         else

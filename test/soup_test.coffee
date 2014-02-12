@@ -92,10 +92,15 @@ module.exports =
         test.done()
 
     '#getAttribute':
-      'finds the character index of the attribute': (test) ->
+      'finds the character indexes of the attribute': (test) ->
         soup = new Soup '  <br> <img data-foo=bar>'
-        soup.getAttribute 'img', 'data-foo', (value, index) ->
-          test.equal index, 12
+        soup.getAttribute 'img', 'data-foo', (value, start, end) ->
+          test.equal start, 12
+          test.equal end, 24
+        soup = new Soup '  <br> <img data-foo>'
+        soup.getAttribute 'img', 'data-foo', (value, start, end) ->
+          test.equal start, 12
+          test.equal end, 20
         test.done()
 
       'does not update the value': (test) ->
@@ -255,6 +260,24 @@ module.exports =
       #     """
 
       #   test.done()
+
+    '#getInnerHTML':
+      'works with a single element, and does not update the value': (test) ->
+        originalHTML = 'test <p class=para>foo <span>bar</span></p>'
+        soup = new Soup originalHTML
+        soup.getInnerHTML '.para', (innerHTML) ->
+          test.strictEqual innerHTML, 'foo <span>bar</span>'
+          return '<b>aight</b>'
+        test.strictEqual soup.toString(), originalHTML
+        test.done()
+
+    'finds the character indexes': (test) ->
+        originalHTML = 'test <p class=para>foo <span>bar</span></p>'
+        soup = new Soup originalHTML
+        soup.getInnerHTML '.para', (innerHTML, start, end) ->
+          test.strictEqual start, 19
+          test.strictEqual end, 39
+        test.done()
 
     '#setInnerHTML':
       'works with a single element': (test) ->
