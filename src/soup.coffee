@@ -204,7 +204,7 @@ module.exports = class Soup
           continue # No need to check if any more attributes match
 
       # If nothing got updated, the attribute must not have been found.
-      if not attrGotUpdated
+      if _value? && !attrGotUpdated
         # The attribute didn't already exist; we need to insert it.
         # Generate the new attribute to insert
         newAttrString = do ->
@@ -222,19 +222,22 @@ module.exports = class Soup
             when true # means "set as boolean attr"
               return name
             else
+              if not value?
+                return null
               if typeof value isnt 'string'
-                throw new Error "Unexpected type: #{typeof value} (#{value}"
+                throw new Error "Unexpected type: #{typeof value} (#{value})"
               # Set the value to this string
               return "#{name}=\"#{value.replace('"', '&quot;')}\""
 
-        # Insert it as the last attribute
-        endInsideOpeningTag = (element.contentStart - 1)
-        if @_string.charAt(endInsideOpeningTag - 1) is '/'
-          endInsideOpeningTag--
-        @_splicings.push
-          start: endInsideOpeningTag
-          content: " #{newAttrString}"
-          end: endInsideOpeningTag
+        if newAttrString?
+          # Insert it as the last attribute
+          endInsideOpeningTag = (element.contentStart - 1)
+          if @_string.charAt(endInsideOpeningTag - 1) is '/'
+            endInsideOpeningTag--
+          @_splicings.push
+            start: endInsideOpeningTag
+            content: " #{newAttrString}"
+            end: endInsideOpeningTag
 
     @_execute()
 
