@@ -64,9 +64,7 @@ soup.setAttribute('img', 'src', function (oldValue) {
 
 #### `getAttribute(selector, attributeName, callback)`
 
-- Same as `setAttritute`, except for:
-  1. it returns the value, and
-  2. if you do pass a callback (you might want to do this if you need to access the `index` argument), its return value won't have any effect.
+- Same as `.setAttritute()`, except your callback's return value won't have any effect.
 
 
 #### `setInnerHTML(selector, attributeName, newHTML)`

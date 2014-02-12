@@ -92,7 +92,7 @@ module.exports =
         test.done()
 
     '#getAttribute':
-      'returns the attribute value': (test) ->
+      'finds the character index of the attribute': (test) ->
         soup = new Soup '  <br> <img data-foo=bar>'
         soup.getAttribute 'img', 'data-foo', (value, index) ->
           test.equal index, 12

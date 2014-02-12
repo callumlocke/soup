@@ -97,12 +97,10 @@ module.exports = class Soup
     foundElements
 
   getAttribute: (selector, name, callback) ->
-    _value = null
     @setAttribute selector, name, (value, info) ->
       callback(value, info) if callback?
       _value = value
       return null # ensure we don't actually set anything
-    return _value
 
   setAttribute: (selector, name, _value) ->
     @_build()
@@ -276,6 +274,7 @@ module.exports = class Soup
         lastIndex = splicing.end
       newString += @_string.substring(lastIndex)
       @_string = newString
+    null
 
   toString: ->
     @_string
