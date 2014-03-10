@@ -29,7 +29,7 @@
     "grunt-contrib-clean": "~0.5.0"
   },
   "dependencies": {
-    "htmlparser2": "~3.4.0",
+    "htmlparser2": "~3.5.1",
     "cheerio": "~0.13.1"
   },
   "scripts": {
