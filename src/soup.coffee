@@ -1,4 +1,4 @@
-htmlparser = require 'htmlparser2'
+htmlparser = require 'cheerio/node_modules/htmlparser2'
 cheerio = require 'cheerio'
 Element = require './element'
 Attribute = require './attribute'
