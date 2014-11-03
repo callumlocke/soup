@@ -18,9 +18,11 @@ Use cases:
 
 ## Usage
 
-`npm install soup`
+```sh
+$ npm install soup
+```
 
-```javascript
+```js
 var Soup = require('soup');
 
 soup = new Soup('<div class=thing><img src=cat.jpg></div>');
@@ -50,13 +52,17 @@ Soup uses [Cheerio](https://github.com/MatthewMueller/cheerio) under the hood fo
   - `true` – to set it as a boolean attribute (eg `required`)
   - `false` – to delete the attribute
   - `null` – for "no change"
-  - a function – which will be passed the current value, and should return one of the above values
-    - it will also be passed an `index` as the second attribute (if the attribute was found), which contains the character index of the attribute you're changing.
+  - a function – which should decide what to do and return the correct value (as a string, boolean, or `null`). The function will be passed these arguments (NB. indices are relative to the start of the whole HTML string):
+    1. the current value
+    2. the start index of the attribute
+    3. the end index of the attribute
+    4. the start index of the element
+    5. the end index of the element
 - Soup will respect the original quote style of each attribute it updates whenever possible (but quotes will be added to non-quoted values if necessitated by characters in the new value).
 
 Example – adding a query string to all image URLs:
 
-```javascript
+```js
 soup.setAttribute('img', 'src', function (oldValue) {
   return oldValue + '?12345'
 });
@@ -64,7 +70,7 @@ soup.setAttribute('img', 'src', function (oldValue) {
 
 #### `getAttribute(selector, attributeName, callback)`
 
-- Same as `.setAttritute()`, except your callback's return value won't have any effect.
+- Same as `.setAttribute()`, except that any return value from your callback will be ignored.
 
 
 #### `setInnerHTML(selector, attributeName, newHTML)`
@@ -77,7 +83,7 @@ soup.setAttribute('img', 'src', function (oldValue) {
 
 Example – appending new content inside an element:
 
-```javascript
+```js
 soup.setInnerHTML('#foo', function (oldHTML) {
   return oldHTML + '<p>appended content</p>'
 });

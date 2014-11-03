@@ -97,8 +97,8 @@ module.exports = class Soup
     foundElements
 
   getAttribute: (selector, name, callback) ->
-    @setAttribute selector, name, (value, start, end) ->
-      callback(value, start, end)
+    @setAttribute selector, name, (value, start, end, elStart, elEnd) ->
+      callback(value, start, end, elStart, elEnd)
       _value = value
       return null # ensure we don't actually set anything
 
@@ -125,7 +125,7 @@ module.exports = class Soup
             when 'function'
               absoluteStart = element.start + attrDetails.start
               absoluteEnd = element.start + attrDetails.end
-              value = _value(attr.valueWithoutQuotes(), absoluteStart, absoluteEnd)
+              value = _value(attr.valueWithoutQuotes(), absoluteStart, absoluteEnd, element.start, element.end)
             when 'string', 'boolean', 'undefined'
               value = _value
             else
