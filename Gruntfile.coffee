@@ -7,7 +7,7 @@ module.exports = (grunt) ->
   config =
     nodeunit:
       all:
-        files: [['test/*_test.coffee']]
+        src: ['test/*_test.coffee']
     watch:
       all:
         files: [
