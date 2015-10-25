@@ -215,7 +215,7 @@ module.exports =
           soup.setAttribute 'img', 'src', 'hi.jpg'
           test.strictEqual soup.toString(), '<br><img data-foo src="hi.jpg"/>'
           test.done()
-        
+
         # 'with self-closing slash after space': (test) ->
         #   soup = new Soup '<br><img data-foo />'
         #   soup.setAttribute 'img', 'src', 'hi.jpg'
@@ -272,12 +272,12 @@ module.exports =
         test.done()
 
     'finds the character indexes': (test) ->
-        originalHTML = 'test <p class=para>foo <span>bar</span></p>'
-        soup = new Soup originalHTML
-        soup.getInnerHTML '.para', (innerHTML, start, end) ->
-          test.strictEqual start, 19
-          test.strictEqual end, 39
-        test.done()
+      originalHTML = 'test <p class=para>foo <span>bar</span></p>'
+      soup = new Soup originalHTML
+      soup.getInnerHTML '.para', (innerHTML, start, end) ->
+        test.strictEqual start, 19
+        test.strictEqual end, 39
+      test.done()
 
     '#setInnerHTML':
       'works with a single element': (test) ->

@@ -18,7 +18,7 @@ module.exports = class Attribute
 
   valueStartIndex: ->
     index = @string.indexOf('=') + 1
-    if index is -1    
+    if index is -1
       null
     else if @valueIsQuoted()
       index + 1
