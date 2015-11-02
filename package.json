@@ -1,18 +1,11 @@
 {
   "name": "soup",
-  "version": "0.1.4",
-  "main": "lib/soup.js",
   "description": "Query and manipulate raw markup via CSS selectors, without losing original formatting",
-  "homepage": "https://github.com/callumlocke/soup",
+  "version": "0.1.4",
+  "author": "Callum Locke (https://github.com/callumlocke)",
   "bugs": {
     "url": "https://github.com/callumlocke/soup/issues"
   },
-  "author": "Callum Locke (https://github.com/callumlocke)",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/callumlocke/soup.git"
-  },
-  "license": "MIT",
   "dependencies": {
     "cheerio": "^0.19.0",
     "htmlparser2": "^3.8.3"
@@ -28,12 +21,19 @@
     "sugar": "^1.4.1",
     "time-grunt": "^1.2.2"
   },
+  "files": [
+    "lib"
+  ],
+  "homepage": "https://github.com/callumlocke/soup",
+  "license": "MIT",
+  "main": "lib/soup.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/callumlocke/soup.git"
+  },
   "scripts": {
     "postpublish": "grunt clean:lib",
     "prepublish": "grunt build",
     "test": "grunt nodeunit:all"
-  },
-  "files": [
-    "lib"
-  ]
+  }
 }
