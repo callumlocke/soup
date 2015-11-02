@@ -14,7 +14,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "cheerio": "~0.19.0"
+    "cheerio": "~0.19.0",
+    "htmlparser2": "^3.8.3"
   },
   "devDependencies": {
     "coffee-script": "~1.10.0",
