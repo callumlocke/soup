@@ -13,17 +13,17 @@ module.exports =
 
     '#hasValue':
       'works correctly': (test) ->
-        test.strictEqual    attr('src="yo"').hasValue(),                true, 
-        test.strictEqual    attr('src=yo').hasValue(),                  true, 
-        test.strictEqual    attr("src='yo'").hasValue(),                true, 
+        test.strictEqual    attr('src="yo"').hasValue(),                true,
+        test.strictEqual    attr('src=yo').hasValue(),                  true,
+        test.strictEqual    attr("src='yo'").hasValue(),                true,
         test.strictEqual    attr('src').hasValue(),                     false,
         test.done()
 
     '#valueIsQuoted':
       'says whether or not the value is quoted': (test) ->
-        test.strictEqual    attr('src="yo"').valueIsQuoted(),           true, 
+        test.strictEqual    attr('src="yo"').valueIsQuoted(),           true,
         test.strictEqual    attr('src=yo').valueIsQuoted(),             false,
-        test.strictEqual    attr("src='yo'").valueIsQuoted(),           true, 
+        test.strictEqual    attr("src='yo'").valueIsQuoted(),           true,
         test.strictEqual    attr('src').valueIsQuoted(),                false,
         test.done()
 
