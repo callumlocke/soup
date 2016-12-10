@@ -81,6 +81,82 @@ module.exports = class Soup
       onend: =>
         refString += @_string.substring lastIndex
 
+      oncomment: (comment) =>
+        # if conditional comments
+        if comment.match(/^\[[\S+\s+]*]>[[\S+\s+]*<!\[[\S+\s+]*]$/)
+          # initialize a new parser for the comment only
+          comment_parser = new htmlparser.Parser
+            onopentag: (tagName, attributes) =>
+              # the parser got a own start point, add the original parser index to get the right start-/endindex
+              parserStartIndex = parser.startIndex + comment_parser.startIndex + 4 # plus 4 because of the comment
+              parserEndIndex = parser.startIndex + comment_parser.endIndex + 4
+              parserTokenizrIndex = parser.startIndex + comment_parser._tokenizer._index + 4 # also here plus 4
+
+              tagId++
+              tagStack.push
+                start: parserStartIndex
+                end: parserTokenizrIndex + 1
+                id: tagId
+
+              if parser.endIndex <= parserStartIndex
+                openingTag = @_string.substring(
+                  parserStartIndex,
+                  parserTokenizrIndex
+                )
+              else
+                openingTag = @_string.substring(
+                  parserStartIndex,
+                  parserEndIndex + 1
+                )
+
+              modifiedOpeningTag = do =>
+                endOfTagNameIndex = openingTag.indexOf ' '
+                if endOfTagNameIndex == -1
+                  endOfTagNameIndex = openingTag.indexOf '/'
+                if endOfTagNameIndex == -1
+                  endOfTagNameIndex = openingTag.indexOf '>'
+                if endOfTagNameIndex == -1
+                  throw new Error 'Should not happen :)'
+
+                openingTag = (
+                  openingTag.substring(0, endOfTagNameIndex) +
+                  " #{@_lookupAttrName}='#{tagId}'" +
+                  openingTag.substring(endOfTagNameIndex)
+                )
+
+              refString += (
+                @_string.substring(lastIndex, parserStartIndex) +
+                modifiedOpeningTag
+              )
+              lastIndex = parserEndIndex + 1
+
+            onclosetag: (tagName) =>
+              parserStartIndex = parser.startIndex + comment_parser.startIndex + 4
+              parserEndIndex = parser.startIndex + comment_parser.endIndex + 4
+              correspondingOpeningTag = tagStack.pop()
+
+              # Hack to fix problem where parser is at index=1 if the very first character was the beginning of an element
+              if correspondingOpeningTag.start == 1 && comment.charAt(1) != '<'
+                correspondingOpeningTag.start = 0
+
+              selfClosingTag = (parserStartIndex == correspondingOpeningTag.start)
+
+              @_elements[correspondingOpeningTag.id] =
+                start: correspondingOpeningTag.start
+                contentStart: correspondingOpeningTag.end
+                contentEnd: (
+                  if selfClosingTag
+                    correspondingOpeningTag.end
+                  else parserStartIndex
+                )
+                end: parserEndIndex + 1
+
+            onend: =>
+              refString += @_string.substring lastIndex
+
+          comment_parser.write comment
+          comment_parser.end()
+
     parser.write @_string
     parser.end()
 

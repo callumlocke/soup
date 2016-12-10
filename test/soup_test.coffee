@@ -72,6 +72,77 @@ module.exports =
         test.strictEqual li2Content, 'Item 2\n  '
         test.done()
 
+      'establishes correct indexes even when closing tags are omitted and conditional comments are set': (test) ->
+        html = """
+        <head>
+          <title>Test</title>
+          <!--[if IE]>
+            <link rel="stylesheet" type="text/css" href="style.css" />
+          <![endif]-->
+        <body>
+        <ul>
+          <li>Item 1
+          <li>Item 2
+          <li>Item 3
+        </ul>
+        """
+
+        soup = new Soup html
+        soup._build()
+
+        head = soup._elements[1]
+        title = soup._elements[2]
+        link = soup._elements[3]
+        body = soup._elements[4]
+        ul = soup._elements[5]
+        li1 = soup._elements[6]
+        li2 = soup._elements[7]
+        li3 = soup._elements[8]
+
+        linkTag = html.substring link.start, link.contentStart
+        test.strictEqual linkTag, '<link rel="stylesheet" type="text/css" href="style.css" />'
+
+        headContent = html.substring head.contentStart, head.contentEnd
+        test.strictEqual headContent, '\n  <title>Test</title>\n  <!--[if IE]>\n    <link rel="stylesheet" type="text/css" href="style.css" />\n  <![endif]-->\n'
+
+        li2Content = html.substring li2.contentStart, li2.contentEnd
+        test.strictEqual li2Content, 'Item 2\n  '
+
+        test.done()
+
+      'establishes correct indexes and ignore wrong cc': (test) ->
+        html = """
+        <head>
+          <title>Test</title>
+          <!--[if IE>
+            <link rel="stylesheet" type="text/css" href="style.css" />
+          <!endif]-->
+        <body>
+        <ul>
+          <li>Item 1</li>
+        </ul>
+        """
+
+        soup = new Soup html
+        soup._build()
+
+        head = soup._elements[1]
+        title = soup._elements[2]
+        body = soup._elements[3]
+        ul = soup._elements[4]
+        li = soup._elements[5]
+
+        titleContent = html.substring title.contentStart, title.contentEnd
+        test.strictEqual titleContent, 'Test'
+
+        bodyContent = html.substring body.start, body.end
+        test.strictEqual bodyContent, '\n<ul>\n  <li>Item 1</li>\n</ul>'
+
+        liContent = html.substring li.contentStart, li.contentEnd
+        test.strictEqual liContent, 'Item 1'
+
+        test.done()
+
     '#_select':
       'selects all the right elements': (test) ->
         html = '<img><br hi><br><p>Hi</p>'
