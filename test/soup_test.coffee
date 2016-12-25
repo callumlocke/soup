@@ -87,7 +87,8 @@ module.exports =
         </ul>
         """
 
-        soup = new Soup html
+        options = { cc: true }
+        soup = new Soup html, options
         soup._build()
 
         head = soup._elements[1]
@@ -101,6 +102,40 @@ module.exports =
 
         linkTag = html.substring link.start, link.contentStart
         test.strictEqual linkTag, '<link rel="stylesheet" type="text/css" href="style.css" />'
+
+        headContent = html.substring head.contentStart, head.contentEnd
+        test.strictEqual headContent, '\n  <title>Test</title>\n  <!--[if IE]>\n    <link rel="stylesheet" type="text/css" href="style.css" />\n  <![endif]-->\n'
+
+        li2Content = html.substring li2.contentStart, li2.contentEnd
+        test.strictEqual li2Content, 'Item 2\n  '
+
+        test.done()
+
+      'establishes correct indexes even when closing tags are omitted and conditional comments are set and options.cc are not set': (test) ->
+        html = """
+        <head>
+          <title>Test</title>
+          <!--[if IE]>
+            <link rel="stylesheet" type="text/css" href="style.css" />
+          <![endif]-->
+        <body>
+        <ul>
+          <li>Item 1
+          <li>Item 2
+          <li>Item 3
+        </ul>
+        """
+
+        soup = new Soup html
+        soup._build()
+
+        head = soup._elements[1]
+        title = soup._elements[2]
+        body = soup._elements[3]
+        ul = soup._elements[4]
+        li1 = soup._elements[5]
+        li2 = soup._elements[6]
+        li3 = soup._elements[7]
 
         headContent = html.substring head.contentStart, head.contentEnd
         test.strictEqual headContent, '\n  <title>Test</title>\n  <!--[if IE]>\n    <link rel="stylesheet" type="text/css" href="style.css" />\n  <![endif]-->\n'

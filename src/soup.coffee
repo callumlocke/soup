@@ -5,8 +5,9 @@ Attribute = require './attribute'
 
 module.exports = class Soup
 
-  constructor: (_string) ->
+  constructor: (_string, _options) ->
     @_string = _string.toString()
+    @_options = _options || {}
 
   _build: ->
     # This constructor builds the _$ref document and the _elements hash, which together allow finding elements in the markup string by CSS selector.
@@ -83,7 +84,7 @@ module.exports = class Soup
 
       oncomment: (comment) =>
         # if conditional comments
-        if comment.match(/^\[[\S+\s+]*]>[[\S+\s+]*<!\[[\S+\s+]*]$/)
+        if comment.match(/^\[[\S+\s+]*]>[[\S+\s+]*<!\[[\S+\s+]*]$/) && @_options.cc
           # initialize a new parser for the comment only
           comment_parser = new htmlparser.Parser
             onopentag: (tagName, attributes) =>
