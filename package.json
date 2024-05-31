@@ -1,7 +1,7 @@
 {
   "name": "soup",
   "description": "Query and manipulate raw markup via CSS selectors, without losing original formatting",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
     "htmlparser2": "^9.1.0"
