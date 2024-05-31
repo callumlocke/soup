@@ -24,8 +24,8 @@
   "main": "lib/soup.js",
   "repository": "callumlocke/soup",
   "scripts": {
-    "postpublish": "grunt clean:lib",
-    "prepublish": "grunt build",
+    "clean": "grunt clean:lib",
+    "build": "grunt build",
     "test": "grunt nodeunit:all"
   }
 }
