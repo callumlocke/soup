@@ -24,13 +24,13 @@ module.exports = class Soup
         tagId++
         tagStack.push
           start: parser.startIndex
-          end: parser._tokenizer._index + 1
+          end: parser.tokenizer.index + 1
           id: tagId
 
         if parser.endIndex <= parser.startIndex
           openingTag = @_string.substring(
             parser.startIndex,
-            parser._tokenizer._index
+            parser.tokenizer.index
           )
         else
           openingTag = @_string.substring(
