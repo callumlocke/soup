@@ -2,8 +2,6 @@
 
 [![NPM version][npm-image]][npm-url]
 
-> As of v0.2.2, now fixed to work with modern runtimes – tested on Node v21 and Bun.
-
 A little library for querying and manipulating tag soup via CSS selectors.
 
 It manipulates the string itself (rather than operating on a parsed DOM and then re-exporting it). So it retains all the syntactic/formatting nuances of the original, such as:
